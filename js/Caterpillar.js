@@ -5,8 +5,7 @@ function moveCaterpillar(caterpillar, mousePosition) {
     caterpillar.positionY = mousePosition.y;
 }
 
-
-function onMoveEvent() {
+function onEatEvent() {
     caterpillar.size += 1;
 }
 
@@ -23,7 +22,7 @@ $(function(){
 
     function update() {
         moveCaterpillar(caterpillar, mousePosition);
-        onMoveEvent();
+        onEatEvent();
     }
 
     function loop() {
@@ -36,8 +35,6 @@ $(function(){
         mousePosition.y = evt.clientY;
     }, false);
 });
-
-
 
 var caterpillar = {
         positionX:10,
