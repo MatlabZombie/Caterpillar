@@ -1,66 +1,88 @@
 $(function(){
+    var canvas = $("#caterpillar-canvas")[0];
+    var context = canvas.getContext("2d");
+    var width = $("#caterpillar-canvas").width();
+    var height = $("#caterpillar-canvas").height();
+    var caterpillar = new Caterpillar(10, 10);
     window.setInterval(loop, 50);
-    var caterpillar = new Caterpillar();
-    var canvas = $('#caterpillar-canvas').get(0);
 
     canvas.addEventListener('mousedown', function(evt) {
-        mousePosition.x = evt.clientX;
-        mousePosition.y = evt.clientY;
+        Mouse.x = evt.clientX;
+        Mouse.y = evt.clientY;
     }, false);
 
     function render(){
-        var context = canvas.getContext("2d");
-        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.clearRect(0, 0, width, height);
         context.beginPath();
-        caterpillar.grow(context);
-    }
+        caterpillar.draw(context);
+    };
 
     function update() {
-        caterpillar.eat();
         caterpillar.move();
-    }
+    };
 
     function loop() {
         update();
         render();
-    }
+    };
 });
 
-function Caterpillar (){
-        this.positionX = 10;
-        this.positionY = 10;
-        this.size = 10;
+function Caterpillar (positionX, positionY){
+    this.positionX = positionX;
+    this.positionY = positionY;
+    var size = 5;
+    var caterpillar = new Array();
+    for (var i = 0; i < size; i++) {
+        caterpillar[i] = new CaterpillarElement();
+    }
 
-        this.move = function(){
-            if(this.positionX<mousePosition.x){
-                this.positionX += 1;
-            }else{
-                this.positionX -+ 1;
-            }
+    this.move = function(){
+        //find Position of new CaterpillarElement
+        if(positionX<Mouse.x){
+            positionX += 1;
+        }else{
+            positionX -= 1;
+        }
 
-            if(this.positionY<mousePosition.y){
-                this.positionY += 1;
-            }else{
-                this.positionY -= 1;
-            }
-        };
+        if(positionY<Mouse.y){
+            positionY += 1;
+        }else{
+            positionY -= 1;
+        }
+        //add one new element
+        caterpillar.unshift(new CaterpillarElement(positionX,positionY))
+        //destroy last element
+        caterpillar.pop();
+    };
 
-        this.eat = function (){
-            this.size += 1;
-        };
+    this.eat = function (){
+        size += 1;
+    };
 
-        this.grow = function (context) {
-            for (var i = 0; i < this.size; i++) {
-            context.arc(this.positionX+(i*10), this.positionY, 5+i, 0, 360, false);
-            context.fillStyle = 'green';
-            context.fill();
-            }
-        };
+    this.draw = function (context){
+        for (var i = 0; i < caterpillar.length; i++) {
+            caterpillar[i].draw(context);
+        }
+    };
 };
 
-function mousePosition (){
-    this.x = 50;
-    this.y = 50;
+function CaterpillarElement (positionX, positionY){
+    var  radius = 5;
+    this.position = function(positionX,positionY){
+        this.positionX = positionX;
+        this.positionY = positionY;
+    };
+
+    this.draw = function (context){
+        context.arc(positionX, positionY, radius, 0, 360, false);
+        context.fillStyle = 'green';
+        context.fill();
+    };
+};
+
+function Mouse (){
+        this.x = 0;
+        this.y = 0;
 };
 
 
