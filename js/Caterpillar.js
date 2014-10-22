@@ -1,56 +1,61 @@
-$(function(){
-    var canvas = $("#caterpillar-canvas")[0];
-    var context = canvas.getContext("2d");
-    var width = $("#caterpillar-canvas").width();
-    var height = $("#caterpillar-canvas").height();
-    var caterpillar = new Caterpillar(10, 10);
+$(function(){//same as document.ready
+
+    var canvas = $("#caterpillar-canvas")[0],
+        context = canvas.getContext("2d"),
+        width = $("#caterpillar-canvas").width(),
+        height = $("#caterpillar-canvas").height(),
+        caterpillar = new Caterpillar(10, 10, 39); // ->
     window.setInterval(loop, 50);
 
-    canvas.addEventListener('mousedown', function(evt) {
-        Mouse.x = evt.clientX;
-        Mouse.y = evt.clientY;
+    window.addEventListener('keydown', function(evt) {
+        if (Math.abs(caterpillar.movingDirection-evt.which)!=2) {
+            caterpillar.movingDirection = evt.which;
+        }
     }, false);
 
     function render(){
         context.clearRect(0, 0, width, height);
         context.beginPath();
         caterpillar.draw(context);
-    };
+    }
 
     function update() {
         caterpillar.move();
-    };
+    }
 
     function loop() {
         update();
         render();
-    };
+    }
 });
 
-function Caterpillar (positionX, positionY){
-    this.positionX = positionX;
-    this.positionY = positionY;
+
+function Caterpillar (positionX, positionY, movingDirection){
+    this.movingDirection = movingDirection;
     var size = 5;
-    var caterpillar = new Array();
+    var caterpillar = [];
     for (var i = 0; i < size; i++) {
-        caterpillar[i] = new CaterpillarElement();
+        caterpillar[i] = new CaterpillarElement(positionX+i,positionY+i);
     }
 
     this.move = function(){
-        //find Position of new CaterpillarElement
-        if(positionX<Mouse.x){
-            positionX += 1;
-        }else{
-            positionX -= 1;
+        switch (this.movingDirection){
+            case 37:
+                positionX --;
+                break;
+            case 38:
+                positionY --;
+                break;
+            case 39:
+                positionX ++;
+                break;
+            case 40:
+                positionY ++;
+                break;
         }
 
-        if(positionY<Mouse.y){
-            positionY += 1;
-        }else{
-            positionY -= 1;
-        }
         //add one new element
-        caterpillar.unshift(new CaterpillarElement(positionX,positionY))
+        caterpillar.unshift(new CaterpillarElement(positionX+1,positionY+1));
         //destroy last element
         caterpillar.pop();
     };
@@ -61,28 +66,25 @@ function Caterpillar (positionX, positionY){
 
     this.draw = function (context){
         for (var i = 0; i < caterpillar.length; i++) {
-            caterpillar[i].draw(context);
+            caterpillar[i].draw(context, i*5);
         }
     };
-};
+}
 
-function CaterpillarElement (positionX, positionY){
-    var  radius = 5;
-    this.position = function(positionX,positionY){
-        this.positionX = positionX;
-        this.positionY = positionY;
-    };
+function CaterpillarElement (positionX,positionY){
 
-    this.draw = function (context){
+    this.draw = function (context, radius){
         context.arc(positionX, positionY, radius, 0, 360, false);
         context.fillStyle = 'green';
         context.fill();
+        context.strokeStyle = 'black';
+        context.lineWidth = 1;
+        context.stroke();
     };
-};
+}
 
-function Mouse (){
-        this.x = 0;
-        this.y = 0;
-};
+
+
+
 
 
