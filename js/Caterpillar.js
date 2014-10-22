@@ -4,11 +4,11 @@ $(function(){//same as document.ready
         context = canvas.getContext("2d"),
         width = $("#caterpillar-canvas").width(),
         height = $("#caterpillar-canvas").height(),
-        caterpillar = new Caterpillar(10, 10, 39); // ->
-    window.setInterval(loop, 50);
+        caterpillar = new Caterpillar(width-10, 10, 37); // ->
+    window.setInterval(loop, 100);
 
     window.addEventListener('keydown', function(evt) {
-        if (Math.abs(caterpillar.movingDirection-evt.which)!=2) {
+        if (Math.abs(caterpillar.movingDirection - evt.which)!=2) {
             caterpillar.movingDirection = evt.which;
         }
     }, false);
@@ -35,27 +35,27 @@ function Caterpillar (positionX, positionY, movingDirection){
     var size = 5;
     var caterpillar = [];
     for (var i = 0; i < size; i++) {
-        caterpillar[i] = new CaterpillarElement(positionX+i,positionY+i);
+        caterpillar[i] = new CaterpillarElement(positionX-(20*i),positionY, i);
     }
 
     this.move = function(){
         switch (this.movingDirection){
-            case 37:
-                positionX --;
+            case Direction.LEFT:
+                positionX -= 20;
                 break;
-            case 38:
-                positionY --;
+            case Direction.DOWN:
+                positionY += 20;
                 break;
-            case 39:
-                positionX ++;
+            case Direction.RIGHT:
+                positionX += 20;
                 break;
-            case 40:
-                positionY ++;
+            case Direction.UP:
+                positionY -= 20;
                 break;
         }
 
         //add one new element
-        caterpillar.unshift(new CaterpillarElement(positionX+1,positionY+1));
+        caterpillar.unshift(new CaterpillarElement(positionX,positionY));
         //destroy last element
         caterpillar.pop();
     };
@@ -65,8 +65,9 @@ function Caterpillar (positionX, positionY, movingDirection){
     };
 
     this.draw = function (context){
-        for (var i = 0; i < caterpillar.length; i++) {
-            caterpillar[i].draw(context, i*5);
+        for (var i = 1; i <= caterpillar.length; i++) {
+            var radius = (caterpillar.length-i)*5;
+            caterpillar[i].draw(context, radius);
         }
     };
 }
@@ -83,8 +84,12 @@ function CaterpillarElement (positionX,positionY){
     };
 }
 
-
-
+var Direction = Object.freeze({
+        LEFT: 37,
+        RIGHT: 39,
+        UP: 38,
+        DOWN: 40
+});
 
 
 
