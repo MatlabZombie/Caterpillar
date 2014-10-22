@@ -1,6 +1,4 @@
 $(function(){//same as document.ready
-
-    //-----------------------------------------------
     var DIRECTION = Object.freeze({
         LEFT: 37,
         RIGHT: 39,
@@ -8,31 +6,39 @@ $(function(){//same as document.ready
         DOWN: 40
     });
 
-    function Position(x, y){
-        this.x = x;
-        this.y = y;
-    }
+    var canvas,
+        context,
+        width,
+        height,
+        STARTING_POSITION,
+        STARTING_DIRECTION,
+        caterpillar,
+        intervalID;
 
-    var canvas = $("#caterpillar-canvas")[0],
-        context = canvas.getContext("2d"),
-        width = $("#caterpillar-canvas").width(),
-        height = $("#caterpillar-canvas").height(),
-        STARTING_POSITION = new Position(200, 200),
-        STARTING_DIRECTION = DIRECTION.LEFT,
-        caterpillar = new Caterpillar(STARTING_POSITION, STARTING_DIRECTION);
 
-    window.setInterval(loop, 200);
+    function init(){
+        DIRECTION.LEFT = 12;
+            canvas = $("#caterpillar-canvas")[0],
+            context = canvas.getContext("2d"),
+            width = $("#caterpillar-canvas").width(),
+            height = $("#caterpillar-canvas").height(),
+            STARTING_POSITION = new Position(200, 200),
+            STARTING_DIRECTION = DIRECTION.LEFT,
+            caterpillar = new Caterpillar(STARTING_POSITION, STARTING_DIRECTION);
 
-    window.addEventListener('keydown', function(evt) {
-        if (Math.abs(caterpillar.movingDirection - evt.which)!=2) {
-            caterpillar.movingDirection = evt.which;
-        }
-    }, false);
-    //----------------------------------------------------------
+        intervalID = window.setInterval(loop, 200);
+
+        window.addEventListener('keydown', function(evt) {
+            if (Math.abs(caterpillar.movingDirection - evt.which)!=2) {
+                if(evt.which == (DIRECTION.LEFT || DIRECTION.RIGHT || DIRECTION.UP ||  DIRECTION.DOWN)) {
+                    caterpillar.movingDirection = evt.which;
+                }
+            }
+        }, false);
+    }init();
 
     function render(){
         context.clearRect(0, 0, width, height);
-        context.beginPath();
         caterpillar.draw(context);
     }
 
@@ -53,7 +59,7 @@ $(function(){//same as document.ready
                 return false;
             }
         }
-    }
+    };
 
     function Caterpillar (position, movingDirection){
         this.position = position;
@@ -85,6 +91,8 @@ $(function(){//same as document.ready
                 //destroy last element
                 caterpillar.pop();
             }else{
+                clearInterval(intervalID);
+                init();
                 console.log('Game over');
             }
         };
@@ -92,17 +100,18 @@ $(function(){//same as document.ready
         this.eat = function (){
             size += 1;
         };
-
+        
         this.draw = function (context){
             for (var i = 0; i < caterpillar.length; i++) {
                 var radius = (caterpillar.length-i)*2;
-                caterpillar[i].draw(context, radius);
+                caterpillar[i].draw(context, 10);
             }
         };
     }
 
     function CaterpillarElement (position){
         this.draw = function (context, radius){
+            context.beginPath();
             context.arc(position.x, position.y, radius, 0, 360, false);
             context.fillStyle = 'green';
             context.fill();
@@ -112,6 +121,10 @@ $(function(){//same as document.ready
         };
     }
 
+    function Position(x, y){
+        this.x = x;
+        this.y = y;
+    }
 });
 
 
