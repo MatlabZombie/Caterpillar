@@ -1,4 +1,4 @@
-$(function(){//same as document.ready
+$(function(){
     var DIRECTION = Object.freeze({
         LEFT: 37,
         RIGHT: 39,
@@ -17,19 +17,19 @@ $(function(){//same as document.ready
 
 
     function init(){
-            canvas = $("#caterpillar-canvas")[0],
-            context = canvas.getContext("2d"),
-            width = $("#caterpillar-canvas").width(),
-            height = $("#caterpillar-canvas").height(),
-            STARTING_POSITION = new Position(200, 200),
-            STARTING_DIRECTION = DIRECTION.LEFT,
-            caterpillar = new Caterpillar(STARTING_POSITION, STARTING_DIRECTION);
-
-        intervalID = window.setInterval(loop, 200);
+            canvas = $("#caterpillar-canvas")[0];
+            context = canvas.getContext("2d");
+            width = $("#caterpillar-canvas").width();
+            height = $("#caterpillar-canvas").height();
+            STARTING_POSITION = new Position(10, 10);
+            STARTING_DIRECTION = DIRECTION.RIGHT;
+            caterpillar = new Caterpillar(STARTING_DIRECTION);
+            intervalID = window.setInterval(loop, 200);
 
         window.addEventListener('keydown', function(evt) {
             if (Math.abs(caterpillar.movingDirection - evt.which)!=2) {
-                if((evt.which == DIRECTION.LEFT) || (evt.which ==DIRECTION.RIGHT) || (evt.which ==DIRECTION.UP) ||  (evt.which ==DIRECTION.DOWN)) {
+                if((evt.which == DIRECTION.LEFT) || (evt.which ==DIRECTION.RIGHT) ||
+                    (evt.which ==DIRECTION.UP) ||  (evt.which ==DIRECTION.DOWN)) {
                     caterpillar.movingDirection = evt.which;
                 }
             }
@@ -50,53 +50,47 @@ $(function(){//same as document.ready
         render();
     }
 
-    var grid = {
-        tileWidth :width/10,
-        tileHeight :height/10,
-        setPosition :function(actualX, actualY){
-            var xIndex = Math.round(actualX/tileWidth);
-            var yIndex = Math.round(actualY/tileHeight);
+    function Grid () {
+        var cellWidth =width/10;
+        var cellHeight =height/10;
+        this.setPosition = function(actualX, actualY){
+            var xIndex = Math.round(actualX/cellWidth);
+            var yIndex = Math.round(actualY/cellHeight);
             this.position = new Position(xIndex, yIndex);
-        },
+        };
 
-        clash :function(){
-            return !(caterpillar.position.x < width && caterpillar.position.x > 0 && caterpillar.position.y < height && caterpillar.position.y > 0);
-        }
+        this.clash = function(){
+            return !(caterpillar.getFirstElement().position.x < width && caterpillar.getFirstElement().position.x > 0
+                && caterpillar.getFirstElement().position.y < height && caterpillar.getFirstElement().position.y > 0);
+        };
     }
 
-    function Caterpillar (position, movingDirection){
-        this.position = position;
-        this.movingDirection = movingDirection;
-        var size = 20;
-        var caterpillar = [];
-        for (var i = 0; i < size; i++) {
-            caterpillar[i] = new CaterpillarElement(new Position(this.position.x-20,this.position.y));
-        }
-
+    function Caterpillar (movingDirection){
         this.move = function(){
+            var aCaterpillarElement = this.addNewElement(caterpillarArray[0]);
             switch (this.movingDirection){
                 case DIRECTION.LEFT:
-                    this.position.x -= 20;
+                    aCaterpillarElement.position.x -= 20;
                     break;
                 case DIRECTION.DOWN:
-                    this.position.y += 20;
+                    aCaterpillarElement.position.y += 20;
                     break;
                 case DIRECTION.RIGHT:
-                    this.position.x += 20;
+                    aCaterpillarElement.position.x += 20;
                     break;
                 case DIRECTION.UP:
-                    this.position.y -= 20;
+                    aCaterpillarElement.position.y -= 20;
                     break;
             }
 
-            if((grid.clash()) /*|| (caterpillar.getItemCount(new CaterpillarElement(new Position(this.position.x,this.position.y)))>1)*/) {
+            if((new Grid().clash()) || ((caterpillarArray.getItemCount(aCaterpillarElement))>1)) {
                 clearInterval(intervalID);
                 init();
                 console.log('Game over');
             }else{
-                caterpillar.unshift(new CaterpillarElement(new Position(this.position.x,this.position.y)));
+                caterpillarArray.unshift(aCaterpillarElement);
                 //destroy last element
-                caterpillar.pop();
+                caterpillarArray.pop();
             }
         };
 
@@ -105,17 +99,42 @@ $(function(){//same as document.ready
         };
 
         this.draw = function (context){
-            for (var i = 0; i < caterpillar.length; i++) {
-                var radius = (caterpillar.length-i)*2;
-                caterpillar[i].draw(context, 10);
+            for (var i = 0; i < caterpillarArray.length; i++) {
+                var radius = (caterpillarArray.length-i)*2;
+                caterpillarArray[i].draw(context, 10);
             }
         };
+
+        this.addNewElement = function (element, x_addition, y_addition){
+            var aCaterpillarElement = new CaterpillarElement(new Position(element.position.x, element.position.y));
+
+            if(x_addition){
+                aCaterpillarElement.position.x += x_addition;
+            }if(y_addition){
+                aCaterpillarElement.position.y += y_addition;
+            }
+            return aCaterpillarElement;
+        };
+
+        this.getFirstElement = function () {
+            return caterpillarArray[0];
+        }
+
+        this.movingDirection = movingDirection;
+        var size = 10;
+        var caterpillarArray = [];
+        for (var i = 1; i < size; i++) {
+            caterpillarArray[0] = new CaterpillarElement(STARTING_POSITION);
+            caterpillarArray[i] = this.addNewElement(caterpillarArray[i-1], -20, 0);
+        }
     }
 
     function CaterpillarElement (position){
+        this.position = position;
+
         this.draw = function (context, radius){
             context.beginPath();
-            context.arc(position.x, position.y, radius, 0, 360, false);
+            context.arc(this.position.x, this.position.y, radius, 0, 360, false);
             context.fillStyle = 'green';
             context.fill();
             context.strokeStyle = 'black';
@@ -127,15 +146,20 @@ $(function(){//same as document.ready
     function Position(x, y){
         this.x = x;
         this.y = y;
+
+        this.getPosition = function(){
+            return this;
+        }
     }
 
     Array.prototype.getItemCount = function(item) {
-        var counts = {};
+        var counts = 0;
         for(var i = 0; i< this.length; i++) {
-            var num = this[i];
-            counts[num] = counts[num] ? counts[num]+1 : 1;
+            if((this[i].position.x == item.position.x) && (this[i].position.y == item.position.y)){
+                counts ++;
+            }
         }
-        return counts[item] || 0;
+       return counts;
     }
 });
 
