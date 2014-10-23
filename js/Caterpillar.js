@@ -17,7 +17,6 @@ $(function(){//same as document.ready
 
 
     function init(){
-        DIRECTION.LEFT = 12;
             canvas = $("#caterpillar-canvas")[0],
             context = canvas.getContext("2d"),
             width = $("#caterpillar-canvas").width(),
@@ -30,14 +29,14 @@ $(function(){//same as document.ready
 
         window.addEventListener('keydown', function(evt) {
             if (Math.abs(caterpillar.movingDirection - evt.which)!=2) {
-                if(evt.which == (DIRECTION.LEFT || DIRECTION.RIGHT || DIRECTION.UP ||  DIRECTION.DOWN)) {
+                if((evt.which == DIRECTION.LEFT) || (evt.which ==DIRECTION.RIGHT) || (evt.which ==DIRECTION.UP) ||  (evt.which ==DIRECTION.DOWN)) {
                     caterpillar.movingDirection = evt.which;
                 }
             }
         }, false);
     }init();
 
-    function render(){
+    function render() {
         context.clearRect(0, 0, width, height);
         caterpillar.draw(context);
     }
@@ -51,20 +50,24 @@ $(function(){//same as document.ready
         render();
     }
 
-    var rules = {
-        move: function() {
-            if (caterpillar.position.x < width && caterpillar.position.x > 0 && caterpillar.position.y < height && caterpillar.position.y > 0) {
-                return true;
-            } else {
-                return false;
-            }
+    var grid = {
+        tileWidth :width/10,
+        tileHeight :height/10,
+        setPosition :function(actualX, actualY){
+            var xIndex = Math.round(actualX/tileWidth);
+            var yIndex = Math.round(actualY/tileHeight);
+            this.position = new Position(xIndex, yIndex);
+        },
+
+        clash :function(){
+            return !(caterpillar.position.x < width && caterpillar.position.x > 0 && caterpillar.position.y < height && caterpillar.position.y > 0);
         }
-    };
+    }
 
     function Caterpillar (position, movingDirection){
         this.position = position;
         this.movingDirection = movingDirection;
-        var size = 5;
+        var size = 20;
         var caterpillar = [];
         for (var i = 0; i < size; i++) {
             caterpillar[i] = new CaterpillarElement(new Position(this.position.x-20,this.position.y));
@@ -86,21 +89,21 @@ $(function(){//same as document.ready
                     break;
             }
 
-            if(rules.move()) {
-                caterpillar.unshift(new CaterpillarElement(new Position(this.position.x,this.position.y)));
-                //destroy last element
-                caterpillar.pop();
-            }else{
+            if((grid.clash()) /*|| (caterpillar.getItemCount(new CaterpillarElement(new Position(this.position.x,this.position.y)))>1)*/) {
                 clearInterval(intervalID);
                 init();
                 console.log('Game over');
+            }else{
+                caterpillar.unshift(new CaterpillarElement(new Position(this.position.x,this.position.y)));
+                //destroy last element
+                caterpillar.pop();
             }
         };
 
         this.eat = function (){
             size += 1;
         };
-        
+
         this.draw = function (context){
             for (var i = 0; i < caterpillar.length; i++) {
                 var radius = (caterpillar.length-i)*2;
@@ -124,6 +127,15 @@ $(function(){//same as document.ready
     function Position(x, y){
         this.x = x;
         this.y = y;
+    }
+
+    Array.prototype.getItemCount = function(item) {
+        var counts = {};
+        for(var i = 0; i< this.length; i++) {
+            var num = this[i];
+            counts[num] = counts[num] ? counts[num]+1 : 1;
+        }
+        return counts[item] || 0;
     }
 });
 
