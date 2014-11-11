@@ -66,6 +66,7 @@ $(function(){
     }
 
     function Caterpillar (movingDirection){
+        this.movingDirection = movingDirection;
         this.move = function(){
             var aCaterpillarElement = this.addNewElement(caterpillarArray[0]);
             switch (this.movingDirection){
@@ -93,18 +94,15 @@ $(function(){
                 caterpillarArray.pop();
             }
         };
-
         this.eat = function (){
             size += 1;
         };
-
         this.draw = function (context){
             for (var i = 0; i < caterpillarArray.length; i++) {
                 var radius = (caterpillarArray.length-i)*2;
                 caterpillarArray[i].draw(context, 10);
             }
         };
-
         this.addNewElement = function (element, x_addition, y_addition){
             var aCaterpillarElement = new CaterpillarElement(new Position(element.position.x, element.position.y));
 
@@ -115,12 +113,10 @@ $(function(){
             }
             return aCaterpillarElement;
         };
-
         this.getFirstElement = function () {
             return caterpillarArray[0];
-        }
+        };
 
-        this.movingDirection = movingDirection;
         var size = 10;
         var caterpillarArray = [];
         for (var i = 1; i < size; i++) {
@@ -159,6 +155,7 @@ $(function(){
                 counts ++;
             }
         }
+        console.log(item.position.x + item.position.y);
        return counts;
     }
 });
